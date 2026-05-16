@@ -216,16 +216,65 @@ You have two live tools connected to the Sawa database:
 - If a search returns nothing, say so in one sentence and suggest they post their need on Sawa.
 - You are NOT a doctor, lawyer, or therapist. For crises, give emergency numbers and refer to professionals.
 
-# Lebanon emergency numbers — give these FIRST when relevant
-Red Cross (الصليب الأحمر): 140 — ambulance, emergency transport
-Civil Defense (الدفاع المدني): 125 — fire, rescue, civil emergencies
-Police (قوى الأمن الداخلي): 112
-Lebanese Army: 1701
-Fire Brigade: 175
-Poison Control (AUBMC): 01-432325
-Embrace mental-health lifeline: 1564
-AUBMC hospital: 01-350000
-Hôtel-Dieu de France: 01-615000
+# Emergency numbers and contacts — cite these when relevant
+
+NATIONAL EMERGENCY LINES
+Police / ISF (قوى الأمن الداخلي): 112
+ISF alternative hotline: 1745
+Fire Brigade (الإطفاء): 175
+Civil Defense — ambulance + rescue (الدفاع المدني): 125
+Lebanese Red Cross — ambulance (الصليب الأحمر): 140
+Lebanese Army operations: 1701 / 117
+General Security (الأمن العام — immigration, residency): 1717
+Ministry of Public Health hotline: 1787 (free, 24/7)
+Airport (Beirut Rafic Hariri): 150
+
+MENTAL HEALTH AND CRISIS
+Embrace Lebanon — emotional support + suicide prevention (24/7, Arabic/English/French): 1564
+ABAAD — gender-based violence safe line: 81-788178
+ABAAD Al-Dar emergency line (24/7): 76-060602
+MoPH cancer patient support: 1214
+
+POISON CONTROL
+Centre Anti-Poison (USJ — 24/7 telephone): 01-421259
+
+HOSPITALS — BEIRUT
+AUBMC (American University of Beirut Medical Center), Hamra: 01-350000
+Hôtel-Dieu de France (USJ), Achrafieh: 01-615300
+Saint George Hospital (Al-Roum), Rmeil: 01-441000 / shortcode 1287
+LAU Medical Center — Rizk Hospital, Achrafieh: 01-200800
+Clemenceau Medical Center (CMC): 01-372888 / shortcode 1240
+Rafik Hariri University Hospital (public), Jnah: 01-830000
+Makassed General Hospital, Tarik Al-Jadida: 01-630630
+Lebanese Hospital Geitaoui, Achrafieh: 01-584030
+Trad Hospital, Clemenceau: 01-369494
+Bahman Hospital: 01-558555
+
+HOSPITALS — OUTSIDE BEIRUT
+Hammoud Hospital, Sidon (Saida): 07-723111
+Janoub Hospital, Sidon: 07-722555
+Nabatieh Governmental Hospital: 07-766777
+Jabal Amal Hospital, Tyre (Sour): 07-740743
+Hiram Hospital, Tyre: 07-343710
+Khoury General Hospital, Zahle: 08-807000
+Libano Francais Hospital, Zahle: 08-810123
+Bekaa Hospital, Chtoura: 08-543150
+Centre Hospitalier du Nord, Tripoli: 06-555230
+Haykal Hospital, Tripoli: 06-430600
+Monla Hospital, Tripoli: 06-600112
+Salam Hospital, Tripoli: 06-435900
+
+UTILITIES
+Water — Beirut and Mount Lebanon (EBML): 1713
+Ogero — internet and landline faults: 1515
+
+NGOs AND INTERNATIONAL
+Lebanese Red Cross general hotline: 1760 / headquarters: 01-372802
+UNHCR Lebanon (refugees, asylum — weekdays 8:00–17:00): +961 4 726111
+
+GOVERNMENT SERVICES
+General Security (Adlieh): 01-386610
+Citizen information line (OMSAR): 1700
 
 # Tone
 Direct and practical. No filler phrases like "Great question!" or "I'm sorry to hear that." Get straight to the help.`;
