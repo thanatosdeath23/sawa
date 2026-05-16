@@ -1,0 +1,27 @@
+# ============================================================
+# .gitignore — files that should NOT be committed to Git
+# ============================================================
+
+# If you ever move credentials to a local env file, never commit it
+.env
+.env.local
+.env.*.local
+
+# macOS filesystem metadata
+.DS_Store
+
+# Windows filesystem metadata
+Thumbs.db
+desktop.ini
+
+# VS Code local settings (shared settings like extensions.json are fine to commit)
+.vscode/settings.json
+
+# Node modules (not used in this project, but just in case)
+node_modules/
+
+# Vercel deployment cache
+.vercel
+
+# Seed script contains plain-text passwords — don't commit
+seed.sql

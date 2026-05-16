@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ============================================================
+       login.html — Sign In / Register page
+       A single card with a toggle to switch between two forms.
+       No page reload needed — everything is handled with JS.
+       ============================================================ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Sawa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============================================================
+       AUTH PAGE WRAPPER
+       Centers the card vertically on a light-green background.
+       Defined in style.css as .auth-page and .auth-card.
+       ============================================================ -->
+  <div class="auth-page">
+    <div class="auth-card">
+
+      <!-- Logo & subtitle -->
+      <div class="auth-logo">
+        <!-- Same mark as the navbar, but slightly larger for the auth card -->
+        <svg class="logo-mark" width="34" height="34" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle class="logo-ring" cx="10" cy="10" r="8"
+                  stroke="#16a34a" stroke-width="1.5"
+                  transform="rotate(-90 10 10)"/>
+          <circle class="logo-dot logo-dot-l" cx="6.5" cy="10" r="2" fill="#16a34a"/>
+          <circle class="logo-dot logo-dot-r" cx="13.5" cy="10" r="2" fill="#16a34a"/>
+        </svg>
+        Sawa<span>.</span>
+      </div>
+      <p class="auth-subtitle">Together We Help — سوا نساعد</p>
+
+      <!-- ============================================================
+           TOGGLE BUTTONS
+           "Sign In" is active by default. Clicking "Register" calls
+           showForm('register') which swaps which form is visible.
+           ============================================================ -->
+      <div class="auth-toggle">
+        <button id="toggle-signin"   class="active" onclick="showForm('signin')">Sign In</button>
+        <button id="toggle-register"               onclick="showForm('register')">Register</button>
+      </div>
+
+
+      <!-- ============================================================
+           SIGN IN FORM
+           Submits to handleSignIn(). Shown by default.
+           ============================================================ -->
+      <form id="signin-form" onsubmit="handleSignIn(event)">
+
+        <div class="form-group">
+          <label for="signin-email">Email</label>
+          <input type="email" id="signin-email"
+                 placeholder="you@example.com"
+                 required autocomplete="email" />
+        </div>
+
+        <div class="form-group">
+          <label for="signin-password">Password</label>
+          <input type="password" id="signin-password"
+                 placeholder="••••••••"
+                 required autocomplete="current-password" />
+        </div>
+
+        <!-- Error / success messages shown by JS -->
+        <div id="signin-error"   class="form-error"   style="display:none; margin-bottom:0.75rem;"></div>
+        <div id="signin-success" class="form-success" style="display:none;"></div>
+
+        <button type="submit" class="btn btn-primary"
+                style="width:100%; margin-top:0.5rem;" id="signin-btn">
+          Sign In
+        </button>
+
+        <p style="text-align:center; font-size:0.8rem; color:#6b7280; margin-top:1rem;">
+          Don't have an account?
+          <a href="#" onclick="showForm('register')" style="color:var(--green); font-weight:500;">Register</a>
+        </p>
+
+      </form>
+
+
+      <!-- ============================================================
+           REGISTER FORM
+           Hidden initially. Submits to handleRegister().
+           ============================================================ -->
+      <form id="register-form" onsubmit="handleRegister(event)" style="display:none;">
+
+        <div class="form-group">
+          <label for="reg-name">Full Name</label>
+          <input type="text" id="reg-name"
+                 placeholder="Your full name"
+                 required autocomplete="name" />
+        </div>
+
+        <div class="form-group">
+          <label for="reg-email">Email</label>
+          <input type="email" id="reg-email"
+                 placeholder="you@example.com"
+                 required autocomplete="email" />
+        </div>
+
+        <div class="form-group">
+          <label for="reg-password">Password</label>
+          <!-- minlength="6" matches Supabase's default minimum -->
+          <input type="password" id="reg-password"
+                 placeholder="At least 6 characters"
+                 minlength="6" required autocomplete="new-password" />
+        </div>
+
+        <div class="form-group">
+          <label for="reg-confirm">Confirm Password</label>
+          <input type="password" id="reg-confirm"
+                 placeholder="Repeat password"
+                 required autocomplete="new-password" />
+        </div>
+
+        <!-- Error / success messages shown by JS -->
+        <div id="reg-error"   class="form-error"   style="display:none; margin-bottom:0.75rem;"></div>
+        <div id="reg-success" class="form-success" style="display:none;"></div>
+
+        <button type="submit" class="btn btn-primary"
+                style="width:100%; margin-top:0.5rem;" id="reg-btn">
+          Create Account
+        </button>
+
+        <p style="text-align:center; font-size:0.8rem; color:#6b7280; margin-top:1rem;">
+          Already have an account?
+          <a href="#" onclick="showForm('signin')" style="color:var(--green); font-weight:500;">Sign In</a>
+        </p>
+
+      </form>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       SCRIPTS
+       ============================================================ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+
+  <script>
+    // ============================================================
+    // LOGIN PAGE LOGIC
+    // ============================================================
+
+
+    // ---- Redirect already-logged-in users away from this page ----
+    // No point showing the login form if a session already exists.
+    document.addEventListener('DOMContentLoaded', async () => {
+      const { data: { session } } = await db.auth.getSession();
+      if (session) window.location.href = 'index.html';
+    });
+
+
+    // ============================================================
+    // TOGGLE BETWEEN SIGN IN AND REGISTER
+    // Shows the correct form and highlights the active toggle button.
+    // ============================================================
+    function showForm(type) {
+      const isSignin = (type === 'signin');
+
+      // Update toggle button styles
+      document.getElementById('toggle-signin').classList.toggle('active',   isSignin);
+      document.getElementById('toggle-register').classList.toggle('active', !isSignin);
+
+      // Swap which form is visible
+      document.getElementById('signin-form').style.display   = isSignin ? 'block' : 'none';
+      document.getElementById('register-form').style.display = isSignin ? 'none'  : 'block';
+    }
+
+
+    // ============================================================
+    // HANDLE SIGN IN
+    // Calls db.auth.signInWithPassword() and redirects on success.
+    // ============================================================
+    async function handleSignIn(e) {
+      e.preventDefault();  // prevent page reload
+      hideMessages('signin');
+
+      const btn = document.getElementById('signin-btn');
+      btn.disabled    = true;
+      btn.textContent = 'Signing in...';
+
+      const email    = document.getElementById('signin-email').value.trim();
+      const password = document.getElementById('signin-password').value;
+
+      const { error } = await db.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        showMessage('signin', 'error', error.message);
+        btn.disabled    = false;
+        btn.textContent = 'Sign In';
+        return;
+      }
+
+      // Success — briefly show a message then go to the homepage
+      showMessage('signin', 'success', 'Signed in! Redirecting...');
+      setTimeout(() => { window.location.href = 'index.html'; }, 800);
+    }
+
+
+    // ============================================================
+    // HANDLE REGISTER
+    // Calls db.auth.signUp() with the user's full name stored
+    // in user_meta_data. The SQL trigger handle_new_user() in
+    // supabase_setup.sql reads this and creates the profiles row.
+    // ============================================================
+    async function handleRegister(e) {
+      e.preventDefault();
+      hideMessages('reg');
+
+      const btn = document.getElementById('reg-btn');
+      btn.disabled    = true;
+      btn.textContent = 'Creating account...';
+
+      const name     = document.getElementById('reg-name').value.trim();
+      const email    = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const confirm  = document.getElementById('reg-confirm').value;
+
+      // Client-side validation: passwords must match before hitting the API
+      if (password !== confirm) {
+        showMessage('reg', 'error', 'Passwords do not match.');
+        btn.disabled    = false;
+        btn.textContent = 'Create Account';
+        return;
+      }
+
+      // signUp() creates the auth.users row. The options.data object
+      // is stored as raw_user_meta_data and read by the DB trigger.
+      const { error } = await db.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: name } }
+      });
+
+      if (error) {
+        showMessage('reg', 'error', error.message);
+        btn.disabled    = false;
+        btn.textContent = 'Create Account';
+        return;
+      }
+
+      // NOTE: depending on your Supabase project settings, the user may need
+      // to verify their email before they can sign in.
+      // Check: Supabase Dashboard → Authentication → Email → "Confirm email"
+      showMessage('reg', 'success', 'Account created! Check your email to confirm, then sign in.');
+      btn.textContent = 'Done!';
+    }
+
+
+    // ---- Message helper functions ----
+    function showMessage(prefix, type, text) {
+      const id = type === 'error' ? `${prefix}-error` : `${prefix}-success`;
+      const el = document.getElementById(id);
+      el.textContent   = text;
+      el.style.display = 'block';
+    }
+
+    function hideMessages(prefix) {
+      document.getElementById(`${prefix}-error`).style.display   = 'none';
+      document.getElementById(`${prefix}-success`).style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>

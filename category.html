@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ============================================================
+       category.html — Browse and filter posts by category
+       Features: tab toggle (Needs / Offers), location search,
+       category dropdown, and + New Post modal
+       ============================================================ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browse — Sawa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============================================================
+       NAVBAR
+       ============================================================ -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <svg class="logo-mark" width="26" height="26" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle class="logo-ring" cx="10" cy="10" r="8"
+                  stroke="#16a34a" stroke-width="1.5"
+                  transform="rotate(-90 10 10)"/>
+          <circle class="logo-dot logo-dot-l" cx="6.5" cy="10" r="2" fill="#16a34a"/>
+          <circle class="logo-dot logo-dot-r" cx="13.5" cy="10" r="2" fill="#16a34a"/>
+        </svg>
+        Sawa<span>.</span>
+      </a>
+      <ul class="navbar-nav">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="category.html" class="active">Browse</a></li>
+        <li id="nav-myposts" style="display:none;"><a href="category.html?mine=1">My Posts</a></li>
+      </ul>
+      <div id="navbar-auth"></div>
+    </div>
+  </nav>
+
+
+  <!-- ============================================================
+       PAGE HEADER
+       Shows the selected category name + breadcrumb.
+       If no ?id= in the URL, defaults to "All Posts".
+       The "+ New Post" button is hidden until JS confirms the user
+       is logged in.
+       ============================================================ -->
+  <div class="page-header">
+    <div class="container">
+      <div class="page-header-inner">
+        <div>
+          <!-- Updated by loadCategoryMeta() if ?id= is present -->
+          <h1 id="page-title">All Posts</h1>
+          <p class="breadcrumb">
+            <a href="index.html">Home</a>
+            → <span id="breadcrumb-cat">Browse</span>
+          </p>
+        </div>
+
+        <!-- Hidden for guests; shown by showNewPostButton() after auth check -->
+        <button class="btn btn-primary" id="new-post-btn"
+                onclick="openNewPostModal()" style="display:none;">
+          + New Post
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       MAIN CONTENT — Tabs, Search, Posts Grid
+       ============================================================ -->
+  <section class="section">
+    <div class="container">
+
+      <!-- TABS: Needs / Offers / My Posts (My Posts shown only when logged in) -->
+      <div class="tabs">
+        <button class="tab-btn active" id="tab-need"  onclick="switchTab('need')">Needs Help</button>
+        <button class="tab-btn"        id="tab-offer" onclick="switchTab('offer')">Offering Help</button>
+        <button class="tab-btn"        id="tab-mine"  onclick="switchTab('mine')" style="display:none;">My Posts</button>
+      </div>
+
+      <!-- SEARCH BAR: location keyword + category dropdown -->
+      <div class="search-bar">
+        <input
+          type="text"
+          id="search-location"
+          placeholder="Filter by location (e.g., Beirut, Tripoli)..."
+          oninput="debouncedSearch()"
+        />
+
+        <!-- Category dropdown — "All Categories" + one option per row from Supabase -->
+        <select
+          id="filter-category"
+          onchange="loadPosts()"
+        >
+          <option value="">All Categories</option>
+          <!-- Populated by loadCategoryMeta() -->
+        </select>
+      </div>
+
+      <!-- POST CARDS GRID — replaced each time loadPosts() runs -->
+      <div class="posts-grid" id="posts-container">
+        <div class="spinner"></div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       NEW / EDIT POST MODAL
+       Opened by openNewPostModal() or openEditModal(id).
+       The hidden #post-id field tells submitPost() whether to
+       INSERT (empty) or UPDATE (has a value).
+       ============================================================ -->
+  <div class="modal-overlay" id="post-modal">
+    <div class="modal">
+
+      <div class="modal-header">
+        <!-- Title changes between "Create New Post" and "Edit Post" -->
+        <h3 id="modal-title">Create New Post</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+
+      <form id="post-form" onsubmit="submitPost(event)">
+
+        <!-- Hidden: stores the post UUID when editing an existing post -->
+        <input type="hidden" id="post-id" />
+
+        <!-- Category + Type on the same row -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="post-category">Category *</label>
+            <select id="post-category" required>
+              <option value="">Select...</option>
+              <!-- Populated by loadCategoryMeta() -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="post-type">Type *</label>
+            <select id="post-type" required>
+              <option value="need">I Need Help</option>
+              <option value="offer">I'm Offering Help</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="post-title">Title *</label>
+          <input type="text" id="post-title" placeholder="Short, clear title" maxlength="100" required />
+        </div>
+
+        <div class="form-group">
+          <label for="post-desc">Description</label>
+          <textarea id="post-desc" placeholder="More details about what you need or can offer..."></textarea>
+        </div>
+
+        <!-- Location + Phone on the same row -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="post-location">Location *</label>
+            <input type="text" id="post-location" placeholder="e.g., Beirut, Mar Elias" required />
+          </div>
+          <div class="form-group">
+            <label for="post-phone">Phone</label>
+            <input type="tel" id="post-phone" placeholder="+961 ..." />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="post-expiry">Expires in (days)</label>
+            <!-- Default 7; max 30 so old posts don't pile up forever -->
+            <input type="number" id="post-expiry" value="7" min="1" max="30" />
+          </div>
+        </div>
+
+        <!-- Checkbox: let guests see the phone number -->
+        <div class="form-check">
+          <input type="checkbox" id="show-contact" />
+          <label for="show-contact">Show contact number to guests (not logged in)</label>
+        </div>
+
+        <!-- Inline error/success messages inside the modal -->
+        <div id="modal-error"   class="form-error"   style="display:none; margin-bottom:0.75rem;"></div>
+        <div id="modal-success" class="form-success" style="display:none;"></div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%;" id="submit-btn">
+          Publish Post
+        </button>
+
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       SCRIPTS
+       ============================================================ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+
+  <script>
+    // ============================================================
+    // CATEGORY PAGE STATE
+    // ============================================================
+    let activeTab     = 'need';  // which tab is currently shown
+    let categoryId    = null;    // numeric category id from ?id= param (null = all)
+    let searchTimeout = null;    // debounce timer for the search input
+
+
+    // ============================================================
+    // PAGE BOOT
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const rawId  = params.get('id');
+      const mine   = params.get('mine');   // ?mine=1 from the "My Posts" navbar link
+      categoryId   = rawId ? parseInt(rawId, 10) : null;
+
+      await loadCategoryMeta();  // populate dropdowns and set page title
+      loadPosts();               // initial render
+
+      // After a short delay, auth is settled — show auth-gated UI elements
+      setTimeout(() => {
+        showNewPostButton();
+
+        // If the user arrived via "My Posts" link, activate that tab
+        if (mine === '1' && currentUser) {
+          switchTab('mine');
+        }
+      }, 400);
+    });
+
+
+    // ============================================================
+    // LOAD CATEGORY METADATA
+    // Fetches all categories and uses them to:
+    //   • Set the page <title> and h1 when a specific ?id= is given
+    //   • Populate the filter dropdown in the search bar
+    //   • Populate the category dropdown inside the new-post modal
+    // ============================================================
+    async function loadCategoryMeta() {
+      const { data: cats } = await db
+        .from('categories')
+        .select('*')
+        .order('sort_order');
+
+      if (!cats) return;
+
+      const filterSel = document.getElementById('filter-category');
+      const postSel   = document.getElementById('post-category');
+
+      cats.forEach(c => {
+        // Add option to the search-bar filter dropdown
+        const opt1 = new Option(c.name, c.id);
+        if (c.id === categoryId) opt1.selected = true;
+        filterSel.appendChild(opt1);
+
+        // Add option to the new-post modal category select
+        const opt2 = new Option(c.name, c.id);
+        if (c.id === categoryId) opt2.selected = true;
+        postSel.appendChild(opt2);
+      });
+
+      // Update the page header if a specific category was selected
+      if (categoryId) {
+        const cat = cats.find(c => c.id === categoryId);
+        if (cat) {
+          document.getElementById('page-title').textContent     = cat.name;
+          document.getElementById('breadcrumb-cat').textContent = cat.name;
+          document.title = `${cat.name} — Sawa`;
+        }
+      }
+    }
+
+
+    // ============================================================
+    // SWITCH TABS
+    // Updates activeTab, toggles button styles, and reloads posts.
+    // ============================================================
+    function switchTab(type) {
+      activeTab = type;
+      document.getElementById('tab-need').classList.toggle('active',  type === 'need');
+      document.getElementById('tab-offer').classList.toggle('active', type === 'offer');
+      document.getElementById('tab-mine').classList.toggle('active',  type === 'mine');
+      loadPosts();
+    }
+
+
+    // ============================================================
+    // DEBOUNCED SEARCH
+    // Waits 400ms after the user stops typing before firing a query,
+    // so we don't send a request on every single keystroke.
+    // ============================================================
+    function debouncedSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(loadPosts, 400);
+    }
+
+
+    // ============================================================
+    // LOAD POSTS
+    // Builds a Supabase query based on the active tab, selected
+    // category, and location search text, then renders the results.
+    // "My Posts" tab bypasses the type filter and shows only the
+    // current user's posts, all with owner controls visible.
+    // ============================================================
+    async function loadPosts() {
+      const container      = document.getElementById('posts-container');
+      container.innerHTML  = '<div class="spinner"></div>';
+
+      const locationQuery  = document.getElementById('search-location').value.trim();
+      const selectedCat    = document.getElementById('filter-category').value;
+
+      let query = db
+        .from('posts_public')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (activeTab === 'mine') {
+        // Show only the logged-in user's active posts (no type or category restriction)
+        if (!currentUser) {
+          container.innerHTML = '<p style="text-align:center; color:var(--text-muted); grid-column:1/-1; padding:3rem 0;">Please log in to see your posts.</p>';
+          return;
+        }
+        query = query.eq('user_id', currentUser.id);
+
+      } else {
+        // Normal tabs: filter by type, then optionally by category
+        query = query.eq('type', activeTab);
+        const catFilter = selectedCat || categoryId;
+        if (catFilter) query = query.eq('category_id', catFilter);
+      }
+
+      // Location search works on all tabs
+      if (locationQuery) query = query.ilike('location', `%${locationQuery}%`);
+
+      const { data: posts, error } = await query;
+
+      if (error) {
+        container.innerHTML = '<p style="color:var(--urgent); text-align:center; grid-column:1/-1;">Failed to load posts. Please try again.</p>';
+        return;
+      }
+
+      if (!posts || posts.length === 0) {
+        const emptyIcon = `<svg class="empty-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>`;
+
+        let emptyBody;
+        if (activeTab === 'mine') {
+          emptyBody = `<p>You have no active posts yet.</p>
+            <div style="margin-top:1.25rem;">
+              <button onclick="openNewPostModal()" class="btn btn-primary">Create your first post</button>
+            </div>`;
+        } else {
+          const label = activeTab === 'need' ? 'help requests' : 'offers';
+          emptyBody = `<p>No ${label} found${locationQuery ? ` in "${escapeHtml(locationQuery)}"` : ''}.</p>`;
+        }
+
+        container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">${emptyIcon}${emptyBody}</div>`;
+        return;
+      }
+
+      // On "My Posts" every card belongs to the current user → always show owner controls
+      container.innerHTML = posts.map(p =>
+        renderPostCard(p, activeTab === 'mine' || currentUser?.id === p.user_id)
+      ).join('');
+    }
+
+
+    // ============================================================
+    // SHOW AUTH-GATED UI (for logged-in users only)
+    // ============================================================
+    function showNewPostButton() {
+      if (currentUser) {
+        document.getElementById('new-post-btn').style.display = 'inline-flex';
+        // Reveal the "My Posts" tab now that we know the user is logged in
+        document.getElementById('tab-mine').style.display = '';
+      }
+    }
+
+
+    // ============================================================
+    // OPEN NEW POST MODAL
+    // Resets the form for a fresh post.
+    // ============================================================
+    function openNewPostModal() {
+      if (!currentUser) {
+        showToast('Please login to create a post.', 'error');
+        window.location.href = 'login.html';
+        return;
+      }
+      // Clear the hidden ID field (signals INSERT, not UPDATE)
+      document.getElementById('post-id').value   = '';
+      document.getElementById('post-form').reset();
+      document.getElementById('modal-title').textContent = 'Create New Post';
+      document.getElementById('submit-btn').textContent  = 'Publish Post';
+      hideModalMessages();
+      document.getElementById('post-modal').classList.add('open');
+    }
+
+
+    // ============================================================
+    // OPEN EDIT MODAL
+    // Fetches the post from Supabase and pre-fills the form.
+    // Uses the posts table directly (not the view) so the owner
+    // always sees their own data including the phone number.
+    // ============================================================
+    async function openEditModal(postId) {
+      const { data: post, error } = await db
+        .from('posts')
+        .select('*')
+        .eq('id', postId)
+        .single();
+
+      if (error || !post) {
+        showToast('Could not load post data.', 'error');
+        return;
+      }
+
+      // Pre-fill every field with the existing post values
+      document.getElementById('post-id').value        = post.id;
+      document.getElementById('post-category').value  = post.category_id;
+      document.getElementById('post-type').value      = post.type;
+      document.getElementById('post-title').value     = post.title;
+      document.getElementById('post-desc').value      = post.description ?? '';
+      document.getElementById('post-location').value  = post.location;
+      document.getElementById('post-phone').value     = post.contact_phone ?? '';
+      document.getElementById('show-contact').checked = post.show_contact_to_guests;
+      document.getElementById('post-expiry').value    = 7;  // reset expiry to default
+
+      document.getElementById('modal-title').textContent = 'Edit Post';
+      document.getElementById('submit-btn').textContent  = 'Save Changes';
+      hideModalMessages();
+      document.getElementById('post-modal').classList.add('open');
+    }
+
+
+    // ============================================================
+    // CLOSE MODAL
+    // ============================================================
+    function closeModal() {
+      document.getElementById('post-modal').classList.remove('open');
+    }
+
+    // Clicking the dark overlay (outside the white box) also closes the modal
+    document.getElementById('post-modal').addEventListener('click', function (e) {
+      if (e.target === this) closeModal();
+    });
+
+
+    // ============================================================
+    // SUBMIT POST (handles both create and update)
+    // Reads the hidden #post-id to decide INSERT vs UPDATE.
+    // ============================================================
+    async function submitPost(e) {
+      e.preventDefault();  // stop the browser from reloading the page
+      hideModalMessages();
+
+      const postId     = document.getElementById('post-id').value;
+      const expiryDays = parseInt(document.getElementById('post-expiry').value, 10) || 7;
+      const expiresAt  = new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString();
+
+      // Collect all form values into an object
+      const postData = {
+        category_id:            parseInt(document.getElementById('post-category').value, 10),
+        type:                   document.getElementById('post-type').value,
+        title:                  document.getElementById('post-title').value.trim(),
+        description:            document.getElementById('post-desc').value.trim() || null,
+        location:               document.getElementById('post-location').value.trim(),
+        contact_phone:          document.getElementById('post-phone').value.trim() || null,
+        show_contact_to_guests: document.getElementById('show-contact').checked,
+        expires_at:             expiresAt,
+      };
+
+      let error;
+      if (postId) {
+        // UPDATE: RLS ensures only the owner can do this
+        ({ error } = await db.from('posts').update(postData).eq('id', postId));
+      } else {
+        // INSERT: attach the current user's id (required by RLS policy)
+        ({ error } = await db.from('posts').insert({ ...postData, user_id: currentUser.id }));
+      }
+
+      if (error) {
+        showModalError(error.message);
+        return;
+      }
+
+      showToast(postId ? 'Post updated!' : 'Post published!', 'success');
+      closeModal();
+      loadPosts();  // refresh the grid so the new/updated card appears
+    }
+
+
+    // ============================================================
+    // DELETE POST
+    // Prompts the user, then removes the row and the card from the DOM.
+    // ============================================================
+    async function deletePost(postId) {
+      if (!confirm('Delete this post? This cannot be undone.')) return;
+
+      const { error } = await db.from('posts').delete().eq('id', postId);
+      if (error) {
+        showToast('Failed to delete post.', 'error');
+        return;
+      }
+
+      showToast('Post deleted.');
+      // Remove the card from the DOM without a full page reload
+      document.getElementById(`post-${postId}`)?.remove();
+    }
+
+
+    // ============================================================
+    // RESOLVE POST
+    // Sets is_resolved = true so the post disappears from the feed.
+    // The posts_public view filters out resolved posts automatically.
+    // ============================================================
+    async function resolvePost(postId) {
+      if (!confirm('Mark this post as resolved? It will be removed from the feed.')) return;
+
+      const { error } = await db
+        .from('posts')
+        .update({ is_resolved: true })
+        .eq('id', postId);
+
+      if (error) {
+        showToast('Failed to resolve post.', 'error');
+        return;
+      }
+
+      showToast('Marked as resolved!', 'success');
+      document.getElementById(`post-${postId}`)?.remove();
+    }
+
+
+    // ---- Modal message helpers ----
+    function showModalError(msg) {
+      const el = document.getElementById('modal-error');
+      el.textContent  = msg;
+      el.style.display = 'block';
+    }
+
+    function hideModalMessages() {
+      document.getElementById('modal-error').style.display   = 'none';
+      document.getElementById('modal-success').style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "sawa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sawa — community emergency-help platform for Lebanon",
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.40.0"
+  }
+}

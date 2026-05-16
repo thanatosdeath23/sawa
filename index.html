@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ============================================================
+       index.html — SAWA Homepage
+       Sections: Navbar, Hero (with stats), How It Works, Mission,
+                 Category Cards, Latest Posts, Footer
+       ============================================================ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sawa — Together We Help</title>
+
+  <!-- Inter: we load weights 400–800 so the 800-weight headings render properly -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Inter for UI, Amiri for the rotating Arabic proverbs (classical Arabic typeface) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Amiri:wght@700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============================================================
+       NAVBAR
+       app.js fills #navbar-auth with either a Login button (guest)
+       or the user's email + Logout (signed-in).
+       ============================================================ -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <!-- SVG mark: ring draws in, then two dots pop — "two people, together" -->
+        <svg class="logo-mark" width="26" height="26" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle class="logo-ring" cx="10" cy="10" r="8"
+                  stroke="#16a34a" stroke-width="1.5"
+                  transform="rotate(-90 10 10)"/>
+          <circle class="logo-dot logo-dot-l" cx="6.5" cy="10" r="2" fill="#16a34a"/>
+          <circle class="logo-dot logo-dot-r" cx="13.5" cy="10" r="2" fill="#16a34a"/>
+        </svg>
+        Sawa<span>.</span>
+      </a>
+      <ul class="navbar-nav">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="category.html">Browse</a></li>
+        <li id="nav-myposts" style="display:none;"><a href="category.html?mine=1">My Posts</a></li>
+      </ul>
+      <div id="navbar-auth"></div>
+    </div>
+  </nav>
+
+
+  <!-- ============================================================
+       HERO
+       Counter badge + headline + CTA buttons, then a stats bar
+       pinned to the bottom edge of the hero (no padding-bottom on
+       the section — the stats row provides that visual closure).
+       ============================================================ -->
+  <section class="hero">
+    <div class="container">
+
+      <!-- "Live" pill — shows resolved-this-week count from Supabase -->
+      <div class="hero-counter" id="helped-counter">Loading...</div>
+
+      <h1>Together We <span class="highlight">Help.</span></h1>
+      <p>
+        A community platform for Lebanon — post needs, offer support,
+        and connect with those around you.
+      </p>
+
+      <div class="hero-actions">
+        <a href="category.html" class="btn btn-primary btn-lg">Browse Posts</a>
+        <!-- Guests → login page; logged-in users → category page (updated by JS) -->
+        <a href="login.html" class="btn btn-outline btn-lg" id="hero-post-btn">
+          Post a Need / Offer
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Stats bar sits outside .container so it spans the full hero width -->
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-num" id="stat-active">—</span>
+        <span class="hero-stat-label">Active Posts</span>
+      </div>
+      <div class="hero-stat-div"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">6</span>
+        <span class="hero-stat-label">Categories</span>
+      </div>
+      <div class="hero-stat-div"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-num" id="stat-resolved">—</span>
+        <span class="hero-stat-label">Helped This Week</span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       QUOTES BAND
+       Sits directly under the hero so the proverbs are visible
+       almost immediately — no scroll past two sections required.
+       Rotates Lebanese / Arabic proverbs about community.
+       rotateQuote() in the page script crossfades every 5s.
+       ============================================================ -->
+  <div class="quotes-band">
+    <div class="container">
+      <div class="quote-stage" id="quote-stage">
+        <p class="quote-arabic" id="quote-ar" lang="ar" dir="rtl">إيد وحدة ما بتصفّق</p>
+        <p class="quote-english" id="quote-en">One hand doesn't clap.</p>
+      </div>
+      <span class="quote-sub">Sawa &middot; سوا &middot; Together</span>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       HOW IT WORKS
+       Dark background creates a strong visual break.
+       Three numbered steps explain the platform to new visitors.
+       ============================================================ -->
+  <section class="section section-dark">
+    <div class="container">
+      <div class="section-title">
+        <h2>How It Works</h2>
+        <p>Get help or give help in three simple steps.</p>
+      </div>
+
+      <div class="steps-grid">
+
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Post Your Need or Offer</h3>
+          <p>Create a post in the right category — blood, medical, housing, food, power, or anything else — and describe what you need or can provide.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>Browse &amp; Connect</h3>
+          <p>Search posts near you and contact the person directly — no middleman, no delay. Real help from real people nearby.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>Mark It Resolved</h3>
+          <p>Once help has been given or received, mark the post as resolved so the community knows and the board stays current.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       CATEGORIES
+       Six clickable cards. Each links to category.html?id=<N>.
+       Rendered by loadCategories() — shows name, description, and
+       the live active-post count for that category.
+       ============================================================ -->
+  <section class="section" style="background: var(--white);">
+    <div class="container">
+      <div class="section-title">
+        <h2>Browse by Category</h2>
+        <p>Find or offer help in the area that matters most right now.</p>
+      </div>
+
+      <div class="categories-grid" id="categories-grid">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       LATEST POSTS
+       The 6 most recently created active posts across all categories.
+       Rendered by loadLatestPosts().
+       ============================================================ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2>Latest Posts</h2>
+        <p>The most recent help requests and offers in the community.</p>
+      </div>
+
+      <div class="posts-grid" id="latest-posts">
+        <div class="spinner"></div>
+      </div>
+
+      <div style="text-align:center; margin-top:2rem;">
+        <a href="category.html" class="btn btn-outline">View All Posts →</a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+
+        <div>
+          <div class="footer-brand">Sawa.</div>
+          <p>
+            Sawa (سوا) means "together" in Arabic. This platform connects
+            Lebanese communities so that help can reach those who need it most.
+          </p>
+        </div>
+
+        <div>
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="category.html">Browse Posts</a></li>
+            <li><a href="login.html">Login / Register</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Categories</h4>
+          <!-- Populated by loadCategories() after fetching from Supabase -->
+          <ul id="footer-cats"></ul>
+        </div>
+
+      </div>
+      <div class="footer-bottom">
+        &copy; 2025 Sawa — Built for Lebanon
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ============================================================
+       SCRIPTS
+       Load order:
+         1. Supabase CDN  — sets window.supabase
+         2. app.js        — creates `db` client + shared helpers
+         3. Inline script — page-specific logic
+       ============================================================ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+
+  <script>
+    // ============================================================
+    // INDEX PAGE LOGIC
+    // ============================================================
+
+
+    // ---- Stats: active posts + resolved this week ----
+    // Runs two Supabase count queries in parallel then fills:
+    //   #helped-counter (hero badge), #stat-active, #stat-resolved (stats bar)
+    async function loadStats() {
+      const now          = new Date().toISOString();
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      // Promise.all fires both queries simultaneously — faster than sequential
+      const [activeResult, resolvedResult] = await Promise.all([
+        db.from('posts')
+          .select('*', { count: 'exact', head: true })
+          .eq('is_resolved', false)
+          .gt('expires_at', now),
+
+        db.from('posts')
+          .select('*', { count: 'exact', head: true })
+          .eq('is_resolved', true)
+          .gte('created_at', sevenDaysAgo)
+      ]);
+
+      const active   = activeResult.count  ?? 0;
+      const resolved = resolvedResult.count ?? 0;
+
+      // Hero "live" badge
+      document.getElementById('helped-counter').innerHTML =
+        `<strong>${resolved}</strong>&nbsp;people helped this week`;
+
+      // Stats bar numbers
+      const elActive   = document.getElementById('stat-active');
+      const elResolved = document.getElementById('stat-resolved');
+      if (elActive)   elActive.textContent   = active;
+      if (elResolved) elResolved.textContent = resolved;
+    }
+
+
+    // ---- Category cards + footer links ----
+    // For each category we also count its active (non-expired, unresolved) posts.
+    async function loadCategories() {
+      const grid       = document.getElementById('categories-grid');
+      const footerList = document.getElementById('footer-cats');
+
+      const { data: cats, error } = await db
+        .from('categories')
+        .select('*')
+        .order('sort_order');
+
+      if (error || !cats) {
+        grid.innerHTML = '<p style="color:var(--urgent);">Could not load categories.</p>';
+        return;
+      }
+
+      // Run all 6 post-count queries in parallel
+      const now = new Date().toISOString();
+      const counts = await Promise.all(
+        cats.map(c =>
+          db.from('posts')
+            .select('*', { count: 'exact', head: true })
+            .eq('category_id', c.id)
+            .eq('is_resolved', false)
+            .gt('expires_at', now)
+        )
+      );
+
+      // Each card shows: category name, description (from DB), and active post count.
+      // The arrow in .count::after slides in on hover (pure CSS).
+      grid.innerHTML = cats.map((c, i) => `
+        <a href="category.html?id=${c.id}" class="category-card">
+          <div class="name">${escapeHtml(c.name)}</div>
+          ${c.description ? `<div class="cat-desc">${escapeHtml(c.description)}</div>` : ''}
+          <div class="count">${counts[i].count ?? 0} active posts</div>
+        </a>
+      `).join('');
+
+      // Footer category links
+      footerList.innerHTML = cats.map(c =>
+        `<li><a href="category.html?id=${c.id}">${escapeHtml(c.name)}</a></li>`
+      ).join('');
+    }
+
+
+    // ---- Latest 6 posts (all categories) ----
+    async function loadLatestPosts() {
+      const container = document.getElementById('latest-posts');
+
+      // posts_public is a VIEW that auto-hides expired/resolved posts
+      // and masks contact_phone from guests when show_contact_to_guests = false
+      const { data: posts, error } = await db
+        .from('posts_public')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (error) {
+        container.innerHTML = '<p style="color:var(--urgent); text-align:center;">Failed to load posts.</p>';
+        return;
+      }
+
+      if (!posts || posts.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1;">
+            <svg class="empty-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+              <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+            </svg>
+            <p>No posts yet — be the first to share!</p>
+          </div>`;
+        return;
+      }
+
+      // renderPostCard() is defined in app.js
+      container.innerHTML = posts.map(p =>
+        renderPostCard(p, currentUser?.id === p.user_id)
+      ).join('');
+    }
+
+
+    // ---- Update the hero "Post" button for logged-in users ----
+    // Guests: Login page. Logged-in: skip login and go straight to Browse.
+    function updateHeroButton() {
+      const btn = document.getElementById('hero-post-btn');
+      if (currentUser && btn) btn.href = 'category.html';
+    }
+
+
+    // ============================================================
+    // ROTATING QUOTES
+    // Four well-known Lebanese / Arabic proverbs about community.
+    // Crossfades on opacity only — no slide, no bounce.
+    // Cycles every 5s; fade out 1s → swap text → fade in 1s.
+    // ============================================================
+    const QUOTES = [
+      { ar: 'إيد وحدة ما بتصفّق',          en: "One hand doesn't clap." },
+      { ar: 'في الاتحاد قوة',               en: 'In unity, there is strength.' },
+      { ar: 'الجار قبل الدار',              en: 'Your neighbour before your home.' },
+      { ar: 'اللي بيزرع خير بيحصد خير',     en: 'He who sows good, reaps good.' },
+      { ar: 'خير الناس أنفعهم للناس',       en: 'The best of people are those most useful to others.' },
+      { ar: 'كلّنا للوطن',                  en: 'All of us, for the homeland.' },
+      { ar: 'شعب واحد قلب واحد',           en: 'One people, one heart.' }
+    ];
+
+    let qIndex = 0;
+    function rotateQuote() {
+      const stage = document.getElementById('quote-stage');
+      if (!stage) return;
+
+      stage.classList.add('fading');                 // start the 1s fade-out
+      setTimeout(() => {
+        qIndex = (qIndex + 1) % QUOTES.length;
+        document.getElementById('quote-ar').textContent = QUOTES[qIndex].ar;
+        document.getElementById('quote-en').textContent = QUOTES[qIndex].en;
+        stage.classList.remove('fading');            // fade back in
+      }, 1000);
+    }
+
+
+    // ---- Run everything on page load ----
+    document.addEventListener('DOMContentLoaded', async () => {
+      // All three data fetches run in parallel — none depends on the other
+      await Promise.all([loadStats(), loadCategories(), loadLatestPosts()]);
+
+      // Small delay lets initAuth() (in app.js) restore the session first
+      setTimeout(updateHeroButton, 300);
+
+      // Start the proverb cycle (only if the user hasn't asked for reduced motion)
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduceMotion) setInterval(rotateQuote, 5000);
+    });
+  </script>
+
+</body>
+</html>
