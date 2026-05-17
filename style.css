@@ -1141,7 +1141,7 @@ h4 {
   .navbar-email            { display: none; }
   .steps-grid              { grid-template-columns: 1fr; }
   .categories-grid         { grid-template-columns: repeat(2, 1fr); }
-  .posts-grid              { grid-template-columns: repeat(2, 1fr); }
+  .posts-grid              { grid-template-columns: 1fr; }
   .footer-grid             { grid-template-columns: 1fr; gap: 2rem; }
   .form-row                { grid-template-columns: 1fr; }
   .tabs                    { width: 100%; }
