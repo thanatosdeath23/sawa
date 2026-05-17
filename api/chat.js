@@ -342,6 +342,21 @@ Direct and practical. No filler phrases like "Great question!" or "I'm sorry to 
 // answer (stop_reason === 'end_turn').
 // ============================================================
 export default async function handler(req, res) {
+  // ---- CORS: only accept requests from our own Vercel deployment or localhost ----
+  // Same-origin browser requests don't send an Origin header, so this only
+  // fires when a foreign site tries to call the endpoint directly.
+  const origin = req.headers.origin;
+  if (origin) {
+    const allowed =
+      origin === (process.env.ALLOWED_ORIGIN ?? '') ||
+      /^https?:\/\/localhost(:\d+)?$/.test(origin) ||
+      /^https:\/\/[\w-]+\.vercel\.app$/.test(origin);
+    if (!allowed) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
