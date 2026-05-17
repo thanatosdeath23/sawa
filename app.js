@@ -244,20 +244,13 @@ function setupChat() {
   const widget = document.createElement('div');
   widget.innerHTML = `
     <button class="chat-fab" id="chat-fab" aria-label="Open Sawa assistant">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-      </svg>
+      <img src="logo.png" width="32" height="32" alt="" aria-hidden="true" style="object-fit:contain;display:block;">
     </button>
 
     <div class="chat-panel" id="chat-panel" role="dialog" aria-label="Sawa assistant chat">
       <header class="chat-header">
         <div class="chat-title">
-          <!-- Same SVG mark as the navbar logo -->
-          <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <circle cx="10" cy="10" r="8" stroke="#16a34a" stroke-width="1.5" transform="rotate(-90 10 10)"/>
-            <circle cx="6.5"  cy="10" r="2" fill="#16a34a"/>
-            <circle cx="13.5" cy="10" r="2" fill="#16a34a"/>
-          </svg>
+          <img src="logo.png" width="26" height="26" alt="" aria-hidden="true" style="object-fit:contain;display:block;">
           <span>Sawa Assistant</span>
         </div>
         <button class="chat-close" id="chat-close" aria-label="Close chat">&times;</button>

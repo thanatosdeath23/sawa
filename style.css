@@ -974,7 +974,7 @@ img.logo-mark { object-fit: contain; }
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--green);
+  background: #fff;
   color: #fff;
   border: none;
   cursor: pointer;
@@ -985,7 +985,7 @@ img.logo-mark { object-fit: contain; }
   justify-content: center;
   transition: background .15s, transform .2s, opacity .2s, box-shadow .2s;
 }
-.chat-fab:hover  { background: var(--green-dark); transform: scale(1.06); }
+.chat-fab:hover  { background: #f0fdf4; transform: scale(1.06); }
 .chat-fab.hidden { opacity: 0; pointer-events: none; transform: scale(0.4); }
 
 .chat-panel {
