@@ -860,6 +860,7 @@ h4 {
   color: #cbd5e1;
   padding: 4rem 0 1.5rem;
   margin-top: 0;
+  border-top: 3px solid var(--green);
 }
 .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
 .footer-brand { font-size: 1.25rem; font-weight: 800; color: var(--white); margin-bottom: 0.75rem; letter-spacing: -0.06em; }
