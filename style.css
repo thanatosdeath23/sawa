@@ -224,15 +224,14 @@ h4 {
   overflow: hidden;
 }
 
-/* Cedar tree watermark — sits behind all hero content */
+/* Cedar tree watermark — right half peeks in from the right edge */
 .hero-cedar {
   position: absolute;
-  top: 46%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 560px;
-  max-width: 82%;
-  opacity: 0.08;
+  right: 0;
+  top: 50%;
+  transform: translate(50%, -50%);
+  width: 500px;
+  opacity: 0.13;
   color: var(--green);
   pointer-events: none;
   user-select: none;
