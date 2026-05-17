@@ -382,7 +382,7 @@ h4 {
    ============================================================ */
 .quotes-band {
   background: var(--green);
-  padding: 6rem 0 5rem;
+  padding: 4rem 0 3.5rem;
   text-align: center;
   overflow: hidden;
 }
@@ -858,11 +858,10 @@ h4 {
 .footer {
   background: var(--dark);
   color: #cbd5e1;
-  padding: 4rem 0 1.5rem;
+  padding: 2.5rem 0 1rem;
   margin-top: 0;
-  border-top: 3px solid var(--green);
 }
-.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; margin-bottom: 1.5rem; }
 .footer-brand { font-size: 1.25rem; font-weight: 800; color: var(--white); margin-bottom: 0.75rem; letter-spacing: -0.06em; }
 img.logo-mark { object-fit: contain; }
 .footer p     { font-size: 0.875rem; line-height: 1.75; color: var(--dark-muted); }
