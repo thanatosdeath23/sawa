@@ -152,49 +152,6 @@
 
 
   <!-- ============================================================
-       CATEGORIES
-       Six clickable cards. Each links to category.html?id=<N>.
-       Rendered by loadCategories() — shows name, description, and
-       the live active-post count for that category.
-       ============================================================ -->
-  <section class="section" style="background: var(--white);">
-    <div class="container">
-      <div class="section-title">
-        <h2>Browse by Category</h2>
-        <p>Find or offer help in the area that matters most right now.</p>
-      </div>
-
-      <div class="categories-grid" id="categories-grid">
-        <div class="spinner"></div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ============================================================
-       LATEST POSTS
-       The 6 most recently created active posts across all categories.
-       Rendered by loadLatestPosts().
-       ============================================================ -->
-  <section class="section">
-    <div class="container">
-      <div class="section-title">
-        <h2>Latest Posts</h2>
-        <p>The most recent help requests and offers in the community.</p>
-      </div>
-
-      <div class="posts-grid" id="latest-posts">
-        <div class="spinner"></div>
-      </div>
-
-      <div style="text-align:center; margin-top:2rem;">
-        <a href="category.html" class="btn btn-outline">View All Posts →</a>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ============================================================
        FOOTER
        ============================================================ -->
   <footer class="footer">
@@ -285,81 +242,20 @@
 
     // ---- Category cards + footer links ----
     // For each category we also count its active (non-expired, unresolved) posts.
+    // ---- Footer category links ----
+    // Fetches categories from Supabase and fills the footer link list.
     async function loadCategories() {
-      const grid       = document.getElementById('categories-grid');
       const footerList = document.getElementById('footer-cats');
 
       const { data: cats, error } = await db
         .from('categories')
-        .select('*')
+        .select('id, name')
         .order('sort_order');
 
-      if (error || !cats) {
-        grid.innerHTML = '<p style="color:var(--urgent);">Could not load categories.</p>';
-        return;
-      }
+      if (error || !cats) return;
 
-      // Run all 6 post-count queries in parallel
-      const now = new Date().toISOString();
-      const counts = await Promise.all(
-        cats.map(c =>
-          db.from('posts')
-            .select('*', { count: 'exact', head: true })
-            .eq('category_id', c.id)
-            .eq('is_resolved', false)
-            .gt('expires_at', now)
-        )
-      );
-
-      // Each card shows: category name, description (from DB), and active post count.
-      // The arrow in .count::after slides in on hover (pure CSS).
-      grid.innerHTML = cats.map((c, i) => `
-        <a href="category.html?id=${c.id}" class="category-card">
-          <div class="name">${escapeHtml(c.name)}</div>
-          ${c.description ? `<div class="cat-desc">${escapeHtml(c.description)}</div>` : ''}
-          <div class="count">${counts[i].count ?? 0} active posts</div>
-        </a>
-      `).join('');
-
-      // Footer category links
       footerList.innerHTML = cats.map(c =>
         `<li><a href="category.html?id=${c.id}">${escapeHtml(c.name)}</a></li>`
-      ).join('');
-    }
-
-
-    // ---- Latest 6 posts (all categories) ----
-    async function loadLatestPosts() {
-      const container = document.getElementById('latest-posts');
-
-      // posts_public is a VIEW that auto-hides expired/resolved posts
-      // and masks contact_phone from guests when show_contact_to_guests = false
-      const { data: posts, error } = await db
-        .from('posts_public')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(6);
-
-      if (error) {
-        container.innerHTML = '<p style="color:var(--urgent); text-align:center;">Failed to load posts.</p>';
-        return;
-      }
-
-      if (!posts || posts.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state" style="grid-column:1/-1;">
-            <svg class="empty-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
-              <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
-            </svg>
-            <p>No posts yet — be the first to share!</p>
-          </div>`;
-        return;
-      }
-
-      // renderPostCard() is defined in app.js
-      container.innerHTML = posts.map(p =>
-        renderPostCard(p, currentUser?.id === p.user_id)
       ).join('');
     }
 
@@ -405,8 +301,8 @@
 
     // ---- Run everything on page load ----
     document.addEventListener('DOMContentLoaded', async () => {
-      // All three data fetches run in parallel — none depends on the other
-      await Promise.all([loadStats(), loadCategories(), loadLatestPosts()]);
+      // Both data fetches run in parallel — neither depends on the other
+      await Promise.all([loadStats(), loadCategories()]);
 
       // Small delay lets initAuth() (in app.js) restore the session first
       setTimeout(updateHeroButton, 300);
