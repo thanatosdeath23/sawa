@@ -64,7 +64,7 @@ function updateNavbar() {
 
   if (currentUser) {
     authArea.innerHTML = `
-      <span style="font-size:0.85rem; color:#6b7280; margin-right:0.25rem;">${escapeHtml(currentUser.email)}</span>
+      <span class="navbar-email">${escapeHtml(currentUser.email)}</span>
       <button class="btn-logout" onclick="signOut()">Logout</button>
     `;
   } else {

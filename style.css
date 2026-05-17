@@ -187,6 +187,16 @@ h4 {
 }
 .btn-ghost:hover { background: var(--bg); color: var(--text); }
 
+.navbar-email {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-right: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
 .btn-logout {
   background: none;
   border: 1px solid transparent;
@@ -1128,6 +1138,7 @@ h4 {
   .hero-stat               { padding: 1.25rem 2.5rem; }
   .hero-stat-div           { display: none; }
 
+  .navbar-email            { display: none; }
   .steps-grid              { grid-template-columns: 1fr; }
   .categories-grid         { grid-template-columns: repeat(2, 1fr); }
   .posts-grid              { grid-template-columns: 1fr; }
