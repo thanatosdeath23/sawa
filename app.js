@@ -335,10 +335,17 @@ async function handleChatSubmit(e) {
   container.scrollTop = container.scrollHeight;
 
   try {
+    // Send the session token so the server can decide whether to show contact info
+    let token = null;
+    try {
+      const { data } = await db.auth.getSession();
+      token = data.session?.access_token ?? null;
+    } catch (_) {}
+
     const response = await fetch('/api/chat', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ messages: chatHistory }),
+      body:    JSON.stringify({ messages: chatHistory, token }),
     });
 
     typing.remove();

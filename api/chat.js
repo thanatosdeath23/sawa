@@ -101,9 +101,27 @@ function timeAgo(dateStr) {
   return `${diffDays}d ago`;
 }
 
+// Verify a Supabase JWT by calling the auth/v1/user endpoint.
+// Returns true only when Supabase confirms the token belongs to an active user.
+async function verifyToken(token) {
+  if (!token) return false;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: {
+        apikey:        SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return res.ok;
+  } catch (_) {
+    return false;
+  }
+}
+
 // search_posts: queries the posts_public view with optional filters.
 // The * in ilike patterns is PostgREST's wildcard (equivalent to SQL %).
-async function searchPosts({ query, category, type, location } = {}) {
+// contact_phone is only included when the caller is authenticated.
+async function searchPosts({ query, category, type, location } = {}, isLoggedIn = false) {
   const now = new Date().toISOString();
 
   let url =
@@ -127,17 +145,21 @@ async function searchPosts({ query, category, type, location } = {}) {
   const posts = await res.json();
   if (!posts.length) return { message: "No active posts match that search right now." };
 
-  // Format for the AI — drop raw ISO timestamp, replace with readable relative time
-  return posts.map(p => ({
-    title:       p.title,
-    description: p.description,
-    location:    p.location,
-    type:        p.type,          // "need" or "offer"
-    category:    p.category_name,
-    author:      p.author_name,
-    contact:     p.contact_phone ?? "(login required to see phone number)",
-    posted:      timeAgo(p.created_at),
-  }));
+  // Format for the AI — drop raw ISO timestamp, replace with readable relative time.
+  // Contact phone is only forwarded to the AI when the request came from a logged-in user.
+  return posts.map(p => {
+    const post = {
+      title:       p.title,
+      description: p.description,
+      location:    p.location,
+      type:        p.type,
+      category:    p.category_name,
+      author:      p.author_name,
+      posted:      timeAgo(p.created_at),
+    };
+    if (isLoggedIn) post.contact = p.contact_phone ?? "not provided";
+    return post;
+  });
 }
 
 // get_stats: returns active post count and resolved-this-week count.
@@ -172,9 +194,10 @@ async function getStats() {
   };
 }
 
-// Dispatcher — routes a tool call from Claude to the right function
-async function executeTool(name, input) {
-  if (name === "search_posts") return await searchPosts(input);
+// Dispatcher — routes a tool call from Claude to the right function.
+// isLoggedIn is passed through so searchPosts can decide whether to expose contact info.
+async function executeTool(name, input, isLoggedIn) {
+  if (name === "search_posts") return await searchPosts(input, isLoggedIn);
   if (name === "get_stats")    return await getStats();
   return { error: "Unknown tool requested" };
 }
@@ -276,6 +299,11 @@ GOVERNMENT SERVICES
 General Security (Adlieh): 01-386610
 Citizen information line (OMSAR): 1700
 
+# Contact information rules
+Post results may or may not include a contact field depending on whether the user is logged in.
+If no contact field appears for a post, do NOT say the number is hidden or mention login. Simply present the post details and let the user click through to the website to connect — they will see the contact option there once logged in.
+Never fabricate or guess a contact number.
+
 # Tone
 Direct and practical. No filler phrases like "Great question!" or "I'm sorry to hear that." Get straight to the help.`;
 
@@ -292,11 +320,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages } = req.body || {};
+    const { messages, token } = req.body || {};
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: "messages array required" });
     }
+
+    // Verify the session token once — result gates contact info in all tool calls
+    const isLoggedIn = await verifyToken(token);
 
     let currentMessages = messages;
     let response;
@@ -318,12 +349,12 @@ export default async function handler(req, res) {
         // Collect every tool_use block Claude requested (may be more than one)
         const toolUseBlocks = response.content.filter(b => b.type === "tool_use");
 
-        // Execute all requested tools in parallel
+        // Execute all requested tools in parallel, passing auth status for contact gating
         const toolResults = await Promise.all(
           toolUseBlocks.map(async (block) => ({
             type:        "tool_result",
             tool_use_id: block.id,
-            content:     JSON.stringify(await executeTool(block.name, block.input)),
+            content:     JSON.stringify(await executeTool(block.name, block.input, isLoggedIn)),
           }))
         );
 
