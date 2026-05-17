@@ -867,6 +867,7 @@ img.logo-mark { object-fit: contain; }
 .footer p     { font-size: 0.875rem; line-height: 1.75; color: var(--dark-muted); }
 .footer h4    { color: #f1f5f9; margin-bottom: 1rem; }
 .footer ul li { margin-bottom: 0.5rem; }
+#footer-cats  { column-count: 2; column-gap: 1rem; }
 .footer ul li a { color: var(--dark-muted); font-size: 0.875rem; transition: color .15s; }
 .footer ul li a:hover { color: var(--white); }
 .footer-bottom { border-top: 1px solid var(--dark-line); padding-top: 1.5rem; text-align: center; font-size: 0.8125rem; color: var(--dark-subtle); }
