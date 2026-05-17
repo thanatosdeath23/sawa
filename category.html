@@ -161,7 +161,8 @@
           </div>
           <div class="form-group">
             <label for="post-phone">Phone</label>
-            <input type="tel" id="post-phone" placeholder="+961 ..." />
+            <input type="tel" id="post-phone" placeholder="+961 ..."
+                   pattern="[+\d\s\-()\[\]]{7,20}" title="7–20 characters: digits, +, spaces, dashes" />
           </div>
         </div>
 
@@ -195,7 +196,10 @@
   <!-- ============================================================
        SCRIPTS
        ============================================================ -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Pinned to exact version + SRI hash so the browser refuses tampered CDN files -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.4/dist/umd/supabase.min.js"
+          integrity="sha384-4eCDoMN/7A46qQ5Tj0rZ/D2VEolFGNIINDTLAcWZcvhkRSsvTfqNfaBMlRRoGEZ5"
+          crossorigin="anonymous"></script>
   <script src="app.js"></script>
 
   <script>
@@ -459,14 +463,23 @@
       const expiryDays = parseInt(document.getElementById('post-expiry').value, 10) || 7;
       const expiresAt  = new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString();
 
-      // Collect all form values into an object
+      // Collect and validate form values before sending to the database
+      const phoneRaw = document.getElementById('post-phone').value.trim();
+      // Allow digits, spaces, +, -, (, ) — standard phone formats only
+      if (phoneRaw && !/^[+\d\s\-()]{7,20}$/.test(phoneRaw)) {
+        showModalError('Please enter a valid phone number (7–20 characters: digits, +, spaces, dashes).');
+        document.getElementById('submit-btn').disabled    = false;
+        document.getElementById('submit-btn').textContent = postId ? 'Save Changes' : 'Publish Post';
+        return;
+      }
+
       const postData = {
         category_id:            parseInt(document.getElementById('post-category').value, 10),
         type:                   document.getElementById('post-type').value,
         title:                  document.getElementById('post-title').value.trim(),
         description:            document.getElementById('post-desc').value.trim() || null,
         location:               document.getElementById('post-location').value.trim(),
-        contact_phone:          document.getElementById('post-phone').value.trim() || null,
+        contact_phone:          phoneRaw || null,
         show_contact_to_guests: document.getElementById('show-contact').checked,
         expires_at:             expiresAt,
       };

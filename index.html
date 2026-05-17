@@ -189,7 +189,10 @@
          2. app.js        — creates `db` client + shared helpers
          3. Inline script — page-specific logic
        ============================================================ -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Pinned to exact version + SRI hash so the browser refuses tampered CDN files -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.4/dist/umd/supabase.min.js"
+          integrity="sha384-4eCDoMN/7A46qQ5Tj0rZ/D2VEolFGNIINDTLAcWZcvhkRSsvTfqNfaBMlRRoGEZ5"
+          crossorigin="anonymous"></script>
   <script src="app.js"></script>
 
   <script>

@@ -16,6 +16,33 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const client = new Anthropic(); // reads ANTHROPIC_API_KEY from env automatically
 
+// ============================================================
+// RATE LIMITING — simple in-memory sliding window
+// Limits each IP to 20 requests per minute.
+// Note: resets on cold start and doesn't share state across
+// multiple warm Vercel instances — acceptable for a soft abuse
+// deterrent; swap for Vercel KV / Upstash if stricter limits needed.
+// ============================================================
+const rateLimitMap = new Map();
+const RATE_LIMIT_MAX    = 20;
+const RATE_LIMIT_WINDOW = 60_000; // 1 minute in ms
+
+function isRateLimited(ip) {
+  const now    = Date.now();
+  const entry  = rateLimitMap.get(ip) ?? { count: 0, resetAt: now + RATE_LIMIT_WINDOW };
+  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + RATE_LIMIT_WINDOW; }
+  entry.count++;
+  rateLimitMap.set(ip, entry);
+  return entry.count > RATE_LIMIT_MAX;
+}
+
+// ============================================================
+// INPUT LIMITS
+// ============================================================
+const MAX_MESSAGES = 20;    // mirrors the frontend 20-message cap
+const MAX_MSG_LEN  = 2000;  // chars per individual message
+const MAX_TOKEN_LEN = 2000; // JWT tokens are typically ~1 200 chars
+
 // Supabase anon key is intentionally public (same value used in app.js).
 // Row Level Security policies in Supabase control what this key can access.
 const SUPABASE_URL      = "https://mtzowhixqtvssrdhnyvr.supabase.co";
@@ -320,10 +347,32 @@ export default async function handler(req, res) {
   }
 
   try {
+    // ---- Rate limiting ----
+    const ip = (req.headers['x-forwarded-for'] ?? '127.0.0.1').split(',')[0].trim();
+    if (isRateLimited(ip)) {
+      return res.status(429).json({ error: "Too many requests. Please wait a moment." });
+    }
+
     const { messages, token } = req.body || {};
 
+    // ---- Input validation ----
     if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: "messages array required" });
+    }
+    if (messages.length > MAX_MESSAGES) {
+      return res.status(400).json({ error: "Too many messages in history." });
+    }
+    for (const msg of messages) {
+      if (!['user', 'assistant'].includes(msg?.role)) {
+        return res.status(400).json({ error: "Invalid message format." });
+      }
+      if (typeof msg.content !== 'string' || msg.content.length > MAX_MSG_LEN) {
+        return res.status(400).json({ error: "Message content too long." });
+      }
+    }
+    if (token !== null && token !== undefined &&
+        (typeof token !== 'string' || token.length > MAX_TOKEN_LEN)) {
+      return res.status(400).json({ error: "Invalid token." });
     }
 
     // Verify the session token once — result gates contact info in all tool calls

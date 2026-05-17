@@ -137,7 +137,10 @@
   <!-- ============================================================
        SCRIPTS
        ============================================================ -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Pinned to exact version + SRI hash so the browser refuses tampered CDN files -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.4/dist/umd/supabase.min.js"
+          integrity="sha384-4eCDoMN/7A46qQ5Tj0rZ/D2VEolFGNIINDTLAcWZcvhkRSsvTfqNfaBMlRRoGEZ5"
+          crossorigin="anonymous"></script>
   <script src="app.js"></script>
 
   <script>
@@ -189,7 +192,9 @@
       const { error } = await db.auth.signInWithPassword({ email, password });
 
       if (error) {
-        showMessage('signin', 'error', error.message);
+        // Use a generic message to prevent email enumeration attacks
+        // (Supabase messages like "User not found" would reveal whether an email is registered)
+        showMessage('signin', 'error', 'Invalid email or password. Please try again.');
         btn.disabled    = false;
         btn.textContent = 'Sign In';
         return;

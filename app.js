@@ -161,12 +161,14 @@ function renderPostCard(post, isOwner = false) {
     const telHref = 'tel:' + post.contact_phone.replace(/\s/g, '');
     // WhatsApp expects digits only (no +, no spaces)
     const waHref  = 'https://wa.me/' + post.contact_phone.replace(/\D/g, '');
+    // escapeHtml on the href values prevents attribute-injection XSS
+    // (e.g. a phone stored as `" onmouseover="...` would break out of the attribute)
     phoneHTML = `
       <div class="post-contact">
         ${IC.phone}
-        <a href="${telHref}">${escapeHtml(post.contact_phone)}</a>
+        <a href="${escapeHtml(telHref)}">${escapeHtml(post.contact_phone)}</a>
         <span class="contact-sep">·</span>
-        <a href="${waHref}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        <a href="${escapeHtml(waHref)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
       </div>`;
   } else if (!currentUser) {
     phoneHTML = `<div class="post-contact muted">${IC.lock} Login to see contact</div>`;
