@@ -224,6 +224,20 @@ h4 {
   overflow: hidden;
 }
 
+/* Cedar tree watermark — sits behind all hero content */
+.hero-cedar {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 560px;
+  max-width: 82%;
+  opacity: 0.08;
+  color: var(--green);
+  pointer-events: none;
+  user-select: none;
+}
+
 /* Dot-grid — more visible than before */
 .hero::before {
   content: '';
