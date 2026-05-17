@@ -864,7 +864,7 @@ h4 {
 }
 .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
 .footer-brand { font-size: 1.25rem; font-weight: 800; color: var(--white); margin-bottom: 0.75rem; letter-spacing: -0.06em; }
-img.logo-mark { border-radius: 6px; object-fit: contain; }
+img.logo-mark { object-fit: contain; }
 .footer p     { font-size: 0.875rem; line-height: 1.75; color: var(--dark-muted); }
 .footer h4    { color: #f1f5f9; margin-bottom: 1rem; }
 .footer ul li { margin-bottom: 0.5rem; }
