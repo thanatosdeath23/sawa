@@ -84,8 +84,8 @@
       </div>
       <div class="hero-stat-div"></div>
       <div class="hero-stat">
-        <span class="hero-stat-num">6</span>
-        <span class="hero-stat-label">Categories</span>
+        <span class="hero-stat-num" id="stat-posts">—</span>
+        <span class="hero-stat-label">Posts Shared</span>
       </div>
       <div class="hero-stat-div"></div>
       <div class="hero-stat">
@@ -161,8 +161,8 @@
         <div>
           <div class="footer-brand">Sawa.</div>
           <p>
-            Sawa (سوا) means "together" in Arabic. This platform connects
-            Lebanese communities so that help can reach those who need it most.
+            Post what you need. Offer what you have. When Lebanon faces hard times,
+            Sawa connects people directly — no wait, no middleman, always free.
           </p>
         </div>
 
@@ -212,8 +212,8 @@
       const now          = new Date().toISOString();
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-      // Promise.all fires both queries simultaneously — faster than sequential
-      const [activeResult, resolvedResult] = await Promise.all([
+      // Promise.all fires all three queries simultaneously — faster than sequential
+      const [activeResult, resolvedResult, totalResult] = await Promise.all([
         db.from('posts')
           .select('*', { count: 'exact', head: true })
           .eq('is_resolved', false)
@@ -222,11 +222,16 @@
         db.from('posts')
           .select('*', { count: 'exact', head: true })
           .eq('is_resolved', true)
-          .gte('created_at', sevenDaysAgo)
+          .gte('created_at', sevenDaysAgo),
+
+        // Total all-time posts — shows overall community activity
+        db.from('posts')
+          .select('*', { count: 'exact', head: true })
       ]);
 
       const active   = activeResult.count  ?? 0;
       const resolved = resolvedResult.count ?? 0;
+      const total    = totalResult.count    ?? 0;
 
       // Hero "live" badge
       document.getElementById('helped-counter').innerHTML =
@@ -235,8 +240,10 @@
       // Stats bar numbers
       const elActive   = document.getElementById('stat-active');
       const elResolved = document.getElementById('stat-resolved');
+      const elPosts    = document.getElementById('stat-posts');
       if (elActive)   elActive.textContent   = active;
       if (elResolved) elResolved.textContent = resolved;
+      if (elPosts)    elPosts.textContent    = total;
     }
 
 
