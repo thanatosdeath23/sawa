@@ -222,6 +222,11 @@
           .select('*', { count: 'exact', head: true })
       ]);
 
+      // Log any query errors to the console so failures are diagnosable
+      if (activeResult.error || resolvedResult.error || totalResult.error) {
+        console.error('Stats query failed:', activeResult.error ?? resolvedResult.error ?? totalResult.error);
+      }
+
       const active   = activeResult.count  ?? 0;
       const resolved = resolvedResult.count ?? 0;
       const total    = totalResult.count    ?? 0;
