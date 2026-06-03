@@ -23,5 +23,13 @@ node_modules/
 # Vercel deployment cache
 .vercel
 
+# Claude Code internal files
+.claude/
+CLAUDE.md
+
+# Generated report and scripts — not part of the website
+*.docx
+*.py
+
 # Seed script contains plain-text passwords — don't commit
 seed.sql
