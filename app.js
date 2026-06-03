@@ -255,7 +255,10 @@ function setupChat() {
           <img src="logo.png" width="26" height="26" alt="" aria-hidden="true" style="object-fit:contain;display:block;">
           <span>Sawa Assistant</span>
         </div>
-        <button class="chat-close" id="chat-close" aria-label="Close chat">&times;</button>
+        <div class="chat-header-actions">
+          <button class="chat-clear" id="chat-clear" aria-label="Clear chat history">Clear</button>
+          <button class="chat-close" id="chat-close" aria-label="Close chat">&times;</button>
+        </div>
       </header>
 
       <div class="chat-messages" id="chat-messages"></div>
@@ -278,8 +281,17 @@ function setupChat() {
   // Wire up events
   document.getElementById('chat-fab').addEventListener('click', toggleChat);
   document.getElementById('chat-close').addEventListener('click', toggleChat);
+  document.getElementById('chat-clear').addEventListener('click', clearChat);
   document.getElementById('chat-form').addEventListener('submit', handleChatSubmit);
 
+  renderChatMessages();
+}
+
+
+function clearChat() {
+  // Wipe history from memory and localStorage, then re-render to show only the welcome message
+  chatHistory = [];
+  localStorage.removeItem(CHAT_STORAGE_KEY);
   renderChatMessages();
 }
 

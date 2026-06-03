@@ -1030,6 +1030,11 @@ img.logo-mark { object-fit: contain; }
   font-size: 0.9375rem;
   letter-spacing: -0.01em;
 }
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 .chat-close {
   background: var(--bg);
   border: 1px solid var(--border);
@@ -1043,6 +1048,20 @@ img.logo-mark { object-fit: contain; }
   transition: background .15s, color .15s;
 }
 .chat-close:hover { background: var(--border); color: var(--text); }
+.chat-clear {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  height: 28px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.chat-clear:hover { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
 
 .chat-messages {
   flex: 1;

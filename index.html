@@ -52,9 +52,6 @@
 
     <div class="container">
 
-      <!-- "Live" pill — shows resolved-this-week count from Supabase -->
-      <div class="hero-counter" id="helped-counter">Loading...</div>
-
       <h1>Together We <span class="highlight">Help.</span></h1>
       <p>
         A free community platform for Lebanon. Whether you need help
@@ -228,10 +225,6 @@
       const active   = activeResult.count  ?? 0;
       const resolved = resolvedResult.count ?? 0;
       const total    = totalResult.count    ?? 0;
-
-      // Hero "live" badge
-      document.getElementById('helped-counter').innerHTML =
-        `<strong>${resolved}</strong>&nbsp;people helped this week`;
 
       // Stats bar numbers
       const elActive   = document.getElementById('stat-active');
