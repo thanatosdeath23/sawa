@@ -197,9 +197,7 @@
        SCRIPTS
        ============================================================ -->
   <!-- Pinned to exact version + SRI hash so the browser refuses tampered CDN files -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.4/dist/umd/supabase.min.js"
-          integrity="sha384-KNyHv8KjK6eBVNHhIsTfZeEI67SpRuU0HwgdojE8vHsG6jnJG+P0hCG3fRWnxCkE"
-          crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.4/dist/umd/supabase.min.js"></script>
   <script src="app.js"></script>
 
   <script>
@@ -341,7 +339,8 @@
       const { data: posts, error } = await query;
 
       if (error) {
-        container.innerHTML = '<p style="color:var(--urgent); text-align:center; grid-column:1/-1;">Failed to load posts. Please try again.</p>';
+        console.error('loadPosts error:', error);
+        container.innerHTML = `<p style="color:var(--urgent); text-align:center; grid-column:1/-1;">Failed to load posts: ${escapeHtml(error.message)}. Please try again.</p>`;
         return;
       }
 

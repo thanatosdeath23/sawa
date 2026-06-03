@@ -19,6 +19,10 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // window.supabase is provided by the CDN script loaded before this file.
 // We name our client "db" to avoid clashing with the CDN's own "supabase" global.
+if (!window.supabase) {
+  document.body.innerHTML = '<div style="padding:2rem;font-family:sans-serif;color:#dc2626;font-size:1rem;">Error: Supabase library failed to load. Please check your internet connection and reload the page.</div>';
+  throw new Error('window.supabase is not defined — CDN script did not load');
+}
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
